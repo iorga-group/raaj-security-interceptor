@@ -12,5 +12,9 @@
   	"karma-phantomjs-launcher": "~0.1.4",
     "bower": "~1.3.3"
   },
+  "scripts": {
+    "postinstall": "node node_modules/bower/bin/bower install",
+    "test": "grunt test --verbose"
+  },
   "license": "LGPLv3"
 }

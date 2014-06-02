@@ -14,6 +14,4 @@ module.exports = function(grunt) {
     grunt.registerTask('test:unit', 'Runs all unit tests with PhantomJS', function () {
       grunt.task.run('karma:unit');
     });
-    
-    grunt.registerTask('travis',['test:unit']);
 };
