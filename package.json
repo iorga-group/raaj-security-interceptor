@@ -6,6 +6,7 @@
   "main": "./src/raaj-security-interceptor.js",
   "devDependencies": {
   	"grunt": "~0.4.5",
+  	"grunt-cli": "~0.1.13",
     "karma": "~0.12.16",
   	"grunt-karma": "~0.8.3",
   	"karma-jasmine": "~0.2.2",
@@ -14,7 +15,7 @@
   },
   "scripts": {
     "postinstall": "node node_modules/bower/bin/bower install",
-    "test": "grunt test --verbose"
+    "test": "node node_modules/grunt-cli/bin/grunt test --verbose"
   },
   "license": "LGPLv3"
 }
