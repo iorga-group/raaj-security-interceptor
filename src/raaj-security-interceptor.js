@@ -20,14 +20,23 @@
 
     angular.module('raaj-security-interceptor', ['raaj-authentication-service'])
         .provider('irajSecurityInterceptor', function() {
-            var apiPrefix = 'api/';
+            var apiPrefix = 'api/',
+            	shouldInterceptRequestFn = function(config) {
+	            	return config.url.indexOf(apiPrefix) == 0;
+	            };
+
             this.setApiPrefix = function(apiPrefixParam) {
                 apiPrefix = apiPrefixParam;
+            }
+            
+            this.setShouldInterceptRequestFn = function(fn) {
+            	shouldInterceptRequestFn = fn;
             }
 
             this.$get = function() {
                 return {
-                    apiPrefix: apiPrefix
+                    apiPrefix: apiPrefix,
+                    shouldInterceptRequest: shouldInterceptRequestFn
                 };
             }
         })
@@ -35,7 +44,7 @@
             $httpProvider.interceptors.push(function($q, $rootScope, irajSecurityInterceptor, irajAuthenticationService) {
                 return {
                     'request': function(config) {
-                        if (config.url.indexOf(irajSecurityInterceptor.apiPrefix) == 0) {
+                        if (irajSecurityInterceptor.shouldInterceptRequest(config)) {
                             if (!irajAuthenticationService.authenticated && !config.authenticating) {
                                 var deferred = $q.defer();
                                 irajAuthenticationService.appendQuery(config, deferred);
