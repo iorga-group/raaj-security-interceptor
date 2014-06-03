@@ -1,13 +1,13 @@
 'use strict';
 
-describe('irajSecurityInterceptor', function() {
+describe('raajSecurityInterceptor', function() {
 
 	it('should be given a specific function to control weither a request should be intercepted or not', function() {
 		var shouldInterceptCalled = false,
 			shouldInterceptResult = undefined;
 		
-		angular.module('myApp', ['raaj-security-interceptor']).config(function(irajSecurityInterceptorProvider) {
-			irajSecurityInterceptorProvider.setShouldInterceptRequestFn(function(config) {
+		angular.module('myApp', ['raaj-security-interceptor']).config(function(raajSecurityInterceptorProvider) {
+			raajSecurityInterceptorProvider.setShouldInterceptRequestFn(function(config) {
 				shouldInterceptCalled = true;
 				if (config.url.indexOf('/test') === 0) {
 					shouldInterceptResult = true;

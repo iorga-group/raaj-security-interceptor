@@ -19,7 +19,7 @@
     // based on https://github.com/witoldsz/angular-http-auth/blob/master/src/http-auth-interceptor.js
 
     angular.module('raaj-security-interceptor', ['raaj-authentication-service'])
-        .provider('irajSecurityInterceptor', function() {
+        .provider('raajSecurityInterceptor', function() {
             var apiPrefix = 'api/',
             	shouldInterceptRequestFn = function(config) {
 	            	return config.url.indexOf(apiPrefix) == 0;
@@ -41,18 +41,18 @@
             }
         })
         .config(function ($httpProvider) {
-            $httpProvider.interceptors.push(function($q, $rootScope, irajSecurityInterceptor, irajAuthenticationService) {
+            $httpProvider.interceptors.push(function($q, $rootScope, raajSecurityInterceptor, raajAuthenticationService) {
                 return {
                     'request': function(config) {
-                        if (irajSecurityInterceptor.shouldInterceptRequest(config)) {
-                            if (!irajAuthenticationService.authenticated && !config.authenticating) {
+                        if (raajSecurityInterceptor.shouldInterceptRequest(config)) {
+                            if (!raajAuthenticationService.authenticated && !config.authenticating) {
                                 var deferred = $q.defer();
-                                irajAuthenticationService.appendQuery(config, deferred);
+                                raajAuthenticationService.appendQuery(config, deferred);
                                 $rootScope.$broadcast('raaj:auth-loginRequired');
                                 return deferred.promise;
                             } else {
                                 // this is an api request, let's add the Authorization header
-                                irajAuthenticationService.addAuthorizationHeader(config);
+                                raajAuthenticationService.addAuthorizationHeader(config);
                             }
                         }
                         return config;
