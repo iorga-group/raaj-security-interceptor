@@ -40,25 +40,26 @@
                 };
             }
         })
-        .config(function ($httpProvider) {
-            $httpProvider.interceptors.push(function($q, $rootScope, raajSecurityInterceptor, raajAuthenticationService) {
-                return {
-                    'request': function(config) {
-                        if (raajSecurityInterceptor.shouldInterceptRequest(config)) {
-                            if (!raajAuthenticationService.authenticated && !config.authenticating) {
-                                var deferred = $q.defer();
-                                raajAuthenticationService.appendQuery(config, deferred);
-                                $rootScope.$broadcast('raaj:auth-loginRequired');
-                                return deferred.promise;
-                            } else {
-                                // this is an api request, let's add the Authorization header
-                                raajAuthenticationService.addAuthorizationHeader(config);
-                            }
+        .factory('raajSecurityRequestInterceptor', function($q, $rootScope, raajSecurityInterceptor, raajAuthenticationService) {
+            return {
+                'request': function(config) {
+                    if (raajSecurityInterceptor.shouldInterceptRequest(config)) {
+                        if (!raajAuthenticationService.authenticated && !config.authenticating) {
+                            var deferred = $q.defer();
+                            raajAuthenticationService.appendQuery(config, deferred);
+                            $rootScope.$broadcast('raaj:auth-loginRequired');
+                            return deferred.promise;
+                        } else {
+                            // this is an api request, let's add the Authorization header
+                            raajAuthenticationService.addAuthorizationHeader(config);
                         }
-                        return config;
                     }
+                    return config;
                 }
-            });
+            };
+        })
+        .config(function ($httpProvider) {
+            $httpProvider.interceptors.push('raajSecurityRequestInterceptor');
         })
     ;
 })();
