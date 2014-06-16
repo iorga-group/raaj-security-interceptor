@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Iorga Group
+ * Copyright (C) 2014 Iorga Group
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +18,7 @@
     'use strict';
     // based on https://github.com/witoldsz/angular-http-auth/blob/master/src/http-auth-interceptor.js
 
-    angular.module('raaj-security-interceptor', ['raaj-authentication-service'])
+    angular.module('raajSecurityInterceptor', ['raajAuthenticationService', 'raajSecurityUtils'])
         .provider('raajSecurityInterceptor', function() {
             var apiPrefix = 'api/',
             	shouldInterceptRequestFn = function(config) {
@@ -40,7 +40,8 @@
                 };
             }
         })
-        .factory('raajSecurityRequestInterceptor', function($q, $rootScope, raajSecurityInterceptor, raajAuthenticationService) {
+        .factory('raajSecurityRequestInterceptor', function($q, $rootScope, raajSecurityInterceptor, raajAuthenticationService, RaajAesUtil, $injector) {
+        	var $http;
             return {
                 'request': function(config) {
                     if (raajSecurityInterceptor.shouldInterceptRequest(config)) {
@@ -51,7 +52,27 @@
                             return deferred.promise;
                         } else {
                             // this is an api request, let's add the Authorization header
-                            raajAuthenticationService.addAuthorizationHeader(config);
+                        	if (config.raajBypassSecurity) {
+                        		// request which require to bypass the security header
+                        		// we well first ask a bypassSecurityToken
+                        		$http = $http || $injector.get('$http'); // Lazy inject to avoid angular circular dependency
+                        		var deferred = $q.defer();
+                        		$http.get(raajSecurityInterceptor.apiPrefix+'security/createBypassSecurityToken').success(function(data) {
+									var aesUtil = new RaajAesUtil(data.keySize, data.iterationCount);
+									var bypassSecurityToken = aesUtil.decrypt(data.salt, data.iv, raajAuthenticationService.digestedPassword, data.encryptedToken);
+									
+									config.headers['X-IRAJ-BypassSecurityToken'] = bypassSecurityToken;
+									
+									raajAuthenticationService.addAuthorizationHeader(config);
+									
+									// and continue the original request
+									deferred.resolve(config);
+                        		});
+                        		return deferred.promise;
+                        	} else {
+                        		// classical request
+                        		raajAuthenticationService.addAuthorizationHeader(config);
+                        	}
                         }
                     }
                     return config;
